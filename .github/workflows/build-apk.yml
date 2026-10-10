@@ -3,9 +3,6 @@ name: Build & Package Android APK
 on:
   workflow_dispatch:
   push:
-    branches:
-      - main
-      - master
 
 jobs:
   build-android:
@@ -23,16 +20,17 @@ jobs:
         with:
           node-version: 22
 
-      # 3. Setup Java JDK 21 (Temurin)
+      # 3. Setup Java JDK 21 (Temurin) dengan Gradle Cache
       - name: 3. Setup Java JDK 21 (Temurin)
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '21'
+          cache: 'gradle'
 
       # 4. Setup Android SDK Platform 35
       - name: 4. Setup Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
         with:
           packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
 
