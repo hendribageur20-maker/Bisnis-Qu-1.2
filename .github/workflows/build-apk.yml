@@ -17,7 +17,7 @@ jobs:
       - name: 1. Checkout Source Code
         uses: actions/checkout@v4
 
-      # 2. Setup Node.js 22 LTS
+      # 2. Setup Node.js 22 LTS (Tanpa cache: npm agar tidak error lockfile)
       - name: 2. Setup Node.js 22
         uses: actions/setup-node@v4
         with:
@@ -63,7 +63,7 @@ jobs:
       # 7. Inisialisasi & Sinkronisasi Platform Android
       - name: 7. Inisialisasi & Sinkronisasi Platform Android
         run: |
-          # Inisialisasi platform android jika belum ada
+          # Inisialisasi platform android jika belum ada atau tidak lengkap
           if [ ! -f "android/gradlew" ]; then
             echo "Membuat platform android native via Capacitor..."
             rm -rf android
@@ -72,6 +72,15 @@ jobs:
 
           echo "Menyinkronkan aset web ke Android..."
           npx cap sync android
+
+          # Injeksi sdk.dir ke local.properties agar Gradle pasti menemukan Android SDK
+          mkdir -p android
+          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+
+          # Salin keystore ke android/app jika belum ada
+          if [ -f debug.keystore ]; then
+            cp debug.keystore android/app/debug.keystore 2>/dev/null || true
+          fi
 
           # Konfigurasi variables.gradle ke SDK 35 yang kompatibel
           cat << 'EOF' > android/variables.gradle
@@ -103,33 +112,35 @@ jobs:
           android.builder.sdkDownload=true
           EOF
 
-          # Beri izin eksekusi gradlew di root dan di folder android
+          # Beri izin eksekusi gradlew
           chmod +x android/gradlew 2>/dev/null || true
           chmod +x gradlew 2>/dev/null || true
 
       # 8. Build APK with Gradle (Skipping tests & lint untuk kecepatan & keandalan)
       - name: 8. Build APK with Gradle
         run: |
-          if [ -f "./gradlew" ]; then
-            ./gradlew assembleDebug --no-daemon --stacktrace -x test -x lint
-          else
-            cd android
-            ./gradlew assembleDebug --no-daemon --stacktrace -x test -x lint
-            cd ..
-          fi
+          cd android
+          ./gradlew assembleDebug --no-daemon --stacktrace -x test -x lint
+          cd ..
 
       # 9. Siapkan File APK
       - name: 9. Siapkan File APK
         run: |
           mkdir -p output-apk
-          APK_FILE=$(find . -type f -name "*debug.apk" -o -name "*.apk" | grep -v "node_modules" | head -n 1)
+          APK_FILE=""
+          if [ -f "android/app/build/outputs/apk/debug/app-debug.apk" ]; then
+            APK_FILE="android/app/build/outputs/apk/debug/app-debug.apk"
+          else
+            APK_FILE=$(find android -type f -name "*.apk" 2>/dev/null | head -n 1)
+          fi
+
           if [ -n "$APK_FILE" ] && [ -f "$APK_FILE" ]; then
             cp "$APK_FILE" output-apk/BisnisQu-1.0.apk
             echo "APK Berhasil dibuat di output-apk/BisnisQu-1.0.apk (Sumber: $APK_FILE)"
             ls -lh output-apk/
           else
             echo "ERROR: File APK tidak ditemukan di build outputs!"
-            find . -name "*.apk" || true
+            find . -name "*.apk" 2>/dev/null || true
             exit 1
           fi
 
