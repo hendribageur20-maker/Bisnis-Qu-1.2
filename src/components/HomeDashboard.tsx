@@ -150,7 +150,7 @@ export const HomeDashboard: React.FC<HomeDashboardProps> = ({
             <div>
               <div className="flex items-center gap-1.5">
                 <span className="text-[10px] font-bold tracking-wider uppercase opacity-90">
-                  Usaha Qu 1.0
+                  Bisnis Qu 1.0
                 </span>
                 <span className="w-1 h-1 rounded-full bg-white/80"></span>
                 <span className="text-[10px] opacity-80">{businessConfig.statusText.split('•')[0]}</span>

@@ -1,0 +1,85 @@
+name: Build Android APK (Bisnis Qu 1.0)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  build-android:
+    name: Build Debug APK
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout Repository
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      # Step 2: Setup Node.js 22 LTS
+      - name: Setup Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # Step 3: Setup Java JDK 21 (Temurin)
+      - name: Setup Java JDK 21 (Temurin)
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '21'
+
+      # Step 4: Setup Android SDK Platform 35
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platform-tools platforms;android-35 build-tools;35.0.0'
+
+      # Step 5: Install Dependencies
+      - name: Install NPM Dependencies
+        run: npm install
+
+      # Step 6: Build Web Assets (Vite Production Build)
+      - name: Build Web Production Assets
+        run: npm run build
+
+      # Step 7: Initialize & Sync Capacitor Android
+      - name: Sync Capacitor Android
+        run: |
+          if [ ! -d "android/app" ]; then
+            npx cap add android
+          fi
+          npx cap sync android
+
+      # Step 8: Configure sdk.dir & Auto Keystore Fallback (No multiline EOF)
+      - name: Configure Android SDK Path and Keystore
+        run: |
+          echo "sdk.dir=$ANDROID_HOME" > android/local.properties
+          if [ ! -f "android/app/debug.keystore" ]; then
+            keytool -genkey -v -keystore android/app/debug.keystore -storepass android -alias androiddebugkey -keypass android -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Android Debug,O=Android,C=US"
+          fi
+          mkdir -p android/app/src/main/res/values
+          echo '<?xml version="1.0" encoding="utf-8"?><resources><string name="app_name">Bisnis Qu 1.0</string><string name="title_activity_main">Bisnis Qu 1.0</string><string name="package_name">com.bisnisqu.app</string><string name="custom_url_scheme">com.bisnisqu.app</string></resources>' > android/app/src/main/res/values/strings.xml
+
+      # Step 9: Build Android APK with Gradle
+      - name: Build APK via Gradle
+        working-directory: android
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      # Step 10: Copy Output & Upload Artifact
+      - name: Collect & Upload Bisnis Qu APK
+        run: |
+          mkdir -p output-apk
+          cp android/app/build/outputs/apk/debug/app-debug.apk output-apk/BisnisQu-1.0.apk
+          echo "APK successfully generated at output-apk/BisnisQu-1.0.apk"
+
+      - name: Upload APK Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: BisnisQu-1.0-APK
+          path: output-apk/BisnisQu-1.0.apk
+          retention-days: 14

@@ -1,0 +1,6 @@
+{
+  "appId": "com.bisnisqu.app",
+  "appName": "Bisnis Qu 1.0",
+  "webDir": "dist",
+  "bundledWebRuntime": false
+}

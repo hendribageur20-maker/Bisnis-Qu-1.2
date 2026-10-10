@@ -47,7 +47,7 @@ export const AndroidFrame: React.FC<AndroidFrameProps> = ({
       <div className="w-full max-w-md flex items-center justify-between px-3 py-2 text-xs text-slate-400 font-medium mb-1">
         <div className="flex items-center gap-2">
           <span className="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span className="font-semibold text-slate-200">Usaha Qu 1.0</span>
+          <span className="font-semibold text-slate-200">Bisnis Qu 1.0</span>
           <span className="hidden sm:inline text-slate-400">• Offline-First Core</span>
         </div>
 
