@@ -1,0 +1,6 @@
+{
+  "name": "Bisnis Qu 1.0",
+  "description": "Aplikasi manajemen operasional bengkel motor dan mobil modern dengan antrian servis, kasir POS, inventaris sparepart, dan CRM berdesain Flutter/Android hijau bersih.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
