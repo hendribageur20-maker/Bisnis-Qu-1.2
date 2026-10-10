@@ -79,6 +79,9 @@ jobs:
           if [ -f debug.keystore ]; then
             cp debug.keystore android/app/debug.keystore 2>/dev/null || true
           fi
+          if [ -f ~/.android/debug.keystore ]; then
+            cp ~/.android/debug.keystore android/app/debug.keystore 2>/dev/null || true
+          fi
 
           # Konfigurasi variables.gradle ke SDK 35 yang kompatibel
           cat << 'EOF' > android/variables.gradle
@@ -118,6 +121,7 @@ jobs:
       - name: 8. Build APK with Gradle
         run: |
           cd android
+          chmod +x gradlew
           ./gradlew assembleDebug --no-daemon --stacktrace -x test -x lint
           cd ..
 
